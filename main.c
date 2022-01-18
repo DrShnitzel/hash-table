@@ -1,7 +1,15 @@
 #include <stdio.h>
+#include <string.h>
 
 const int tableSize = 128;
-char* hashTable[tableSize];
+struct Entry* hashTable[tableSize] = {};
+
+struct Entry
+{
+  char key[32];
+  char value[32];
+  struct Entry* next;
+};
 
 int calculateIndex(char* key) {
   // Calculate some hash. Binary shift of key's number representation for example
@@ -10,18 +18,33 @@ int calculateIndex(char* key) {
   return hash % tableSize;
 }
 
-void insert(char* key, char* value) {
-  hashTable[calculateIndex(key)] = value;
+void insert(struct Entry* entry) {
+  int i = calculateIndex(entry->key);
+
+  if (hashTable[i] != NULL) {
+    entry->next = hashTable[i];
+  }
+  hashTable[i] = entry;
 }
 
 char* find(char* key) {
-  return hashTable[calculateIndex(key)];
+  struct Entry* entry = hashTable[calculateIndex(key)];
+
+  while(entry != NULL) {
+    if (strcmp(entry->key, key) == 0) {
+      return entry->value;
+    }
+
+    entry = entry->next;
+  }
+
+  return "";
 }
 
 int main() {
-  insert("first", "bin");
-  insert("second", "bon");
-  insert("first", "bun");
+  insert(&(struct Entry){ "first", "bin" });
+  insert(&(struct Entry){ "second", "bon" });
+  insert(&(struct Entry){ "third", "bun" });
 
   printf("Found: %s\n", find("second"));
 
